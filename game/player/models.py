@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+import csv
 
 
 class Level(models.Model):
@@ -56,6 +57,43 @@ class Player(models.Model):
                     level_prize.save()
 
         self.save()
+
+    def save_level_data_to_file(self, file_path):
+        """
+        Этот метод лучше хранить вне модели в utils,
+        но для наглядности оставил тут.
+        """
+        with open(file_path, "w", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(
+                ["player_id", "level_title", "is_completed", "prize_title"]
+            )
+
+            prize_subquery = LevelPrize.objects.filter(
+                level=models.OuterRef("level"),
+                level__playerlevel__player=models.OuterRef("player"),
+            ).values("prize__title")[:1]
+
+            player_levels = (
+                PlayerLevel.objects.filter(player=self)
+                .annotate(prize_title=models.Subquery(prize_subquery))
+                .select_related("level")
+                .iterator()
+            )
+
+            for player_level in player_levels:
+                writer.writerow(
+                    [
+                        self.player_id,
+                        player_level.level.title,
+                        player_level.is_completed,
+                        (
+                            player_level.prize_title
+                            if player_level.prize_title
+                            else "No Prize"
+                        ),
+                    ]
+                )
 
 
 class LevelPrize(models.Model):
