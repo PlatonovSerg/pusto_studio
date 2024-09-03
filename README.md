@@ -1,6 +1,6 @@
 # FirstTask
 
-```python
+```python {"id":"01J6VYGB2C7R02YC9VNPNJSJ6P"}
 from django.db import models
 from django.utils import timezone
 
@@ -71,100 +71,56 @@ boost = Boost.type_of_boost(player)  # Присваиваем буст на ос
 
 # Second Task
 
-Задача:
-
-Дано несколько моделей
-```python
-from django.db import models
-
-class Player(models.Model):
-    player_id = models.CharField(max_length=100)
-    
-    
-class Level(models.Model):
-    title = models.CharField(max_length=100)
-    order = models.IntegerField(default=0)
-    
-    
-    
-class Prize(models.Model):
-    title = models.CharField()
-    
-    
-class PlayerLevel(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    level = models.ForeignKey(Level, on_delete=models.CASCADE)
-    completed = models.DateField()
-    is_completed = models.BooleanField(default=False)
-    score = models.PositiveIntegerField(default=0)
-    
-    
-class LevelPrize(models.Model):
-    level = models.ForeignKey(Level, on_delete=models.CASCADE)
-    prize = models.ForeignKey(Prize, on_delete=models.CASCADE)
-    received = models.DateField()
-     
-     
-```
 Написать два метода:
 
 1. Присвоение игроку приза за прохождение уровня.
 2. Выгрузку в csv следующих данных: id игрока, название уровня, пройден ли уровень, полученный приз за уровень. Учесть, что записей может быть 100 000 и более.
-     
 
 ## Task2.1 Присвоение игроку приза за прохождение уровня.
 
-```python
+```python {"id":"01J6VYGB2EXN1J3YHVA0VHBC6H"}
+import csv
 
-class PlayerPrize(models.Model):
-    """
-    # Добавил модель для связи приза с игроком.
-    """
+from django.db import models
+from django.utils import timezone
 
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    prize = models.ForeignKey(Prize, on_delete=models.CASCADE)
-    received = models.DateField(default=timezone.now)
 
-    class Meta:
-        unique_together = ("player", "prize")
+class Level(models.Model):
+    title = models.CharField(max_length=100)
+    order = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.title}"
+
+
+class Prize(models.Model):
+    title = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.title}"
 
 
 class PlayerLevel(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player = models.ForeignKey("Player", on_delete=models.CASCADE)
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
     completed = models.DateField()
     is_completed = models.BooleanField(default=False)
     score = models.PositiveIntegerField(default=0)
 
-    def assign_prize(self):
-        """
-        Создает связь между игроком и призом в случае прохождения уровня.
-        Через таблицу PlayerPrize
-        """
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         if self.is_completed:
-            level_prize = LevelPrize.objects.filter(level=self.level).first()
+            self.player.update_score_and_prizes()
 
-            if not level_prize:
-                return False
 
-            if not PlayerPrize.objects.filter(
-                player=self.player, prize=level_prize.prize
-            ).exists():
-                PlayerPrize.objects.create(
-                    player=self.player,
-                    prize=level_prize.prize,
-                    received=timezone.now(),
-                )
-                return True
-
-        return False
-```
-
-## Выгрузку в csv следующих данных: id игрока, название уровня, пройден ли уровень, полученный приз за уровень. Учесть, что записей может быть 100 000 и более.
-     
-```python
 class Player(models.Model):
+    name = models.CharField(max_length=25)
     player_id = models.CharField(max_length=100)
+    avatar = models.ImageField(upload_to="posts/%Y/%m/%d/", blank=True)
+    total_score = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.player_id}"
 
     def save_level_data_to_file(self, file_path):
         """
@@ -203,12 +159,38 @@ class Player(models.Model):
                     ]
                 )
 
+    def update_score_and_prizes(self):
+        completed_levels = PlayerLevel.objects.filter(
+            player=self, is_completed=True
+        )
+
+        self.total_score = 0
+
+        for player_level in completed_levels:
+            self.total_score += player_level.score
+
+            level_prizes = LevelPrize.objects.filter(level=player_level.level)
+            for level_prize in level_prizes:
+                if level_prize.received is None:
+                    level_prize.received = timezone.now()
+                    level_prize.save()
+
+        self.save()
+
+
+class LevelPrize(models.Model):
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+    prize = models.ForeignKey(Prize, on_delete=models.CASCADE)
+    received = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.level} - {self.prize}, {self.received}"
+
 ```
 
-### Пример выгруженных данных 
+### Пример выгруженных данных
 
-
-```csv
+```csv {"id":"01J6VYGB2EXN1J3YHVA6AD3C5N"}
 player_id,level_title,is_completed,prize_title
 strong_143345,MediumLevel,True,Beer
 strong_143345,EasyLevel,True,Pizza
