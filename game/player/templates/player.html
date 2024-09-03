@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<div class="profile-container">
+  <div class="avatar">
+    <img src="{{ player.avatar.url }}" alt="Player Avatar" />
+</div>
+  <div class="player-info">
+    <h1 class="player-name">{{player.name}}</h1>
+    <p class="player-id">{{player.player_id}}</p>
+    <p class="player-points">Points: {{player.total_score}}</p>
+    <div class="player-prizes">
+      <h2>Prizes</h2>
+      <ul>
+        {% for item in player_prizes %}
+        <li>{{ item.prize.title }}</li>
+    {% empty %}
+        <li>No prizes earned yet.</li>
+    {% endfor %}
+    </ul>
+      
+
+    </div>
+  </div>
+  <div class="progress-bar-container">
+    <div class="progress-bar">
+      <div class="dot completed"></div>
+      <div class="dot completed"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot large"></div>
+    </div>
+    <div class="progress-line">
+      <div class="progress-line-filled"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

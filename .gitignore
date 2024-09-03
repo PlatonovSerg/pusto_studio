@@ -1,0 +1,74 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.swp
+*.swo
+*.DS_Store
+*.egg
+*.egg-info/
+.eggs/
+*.log
+
+# Django stuff:
+*.sqlite3
+db.sqlite3
+/staticfiles
+/media
+.env
+
+# Ignore static files compiled with collectstatic
+/static/
+staticfiles/
+
+# Ignore virtual environment directories
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+.Python
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore mypy, pyre, and other type-checking caches
+.mypy_cache/
+.pyre/
+.pytype/
+
+# Ignore coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Ignore pytest cache
+.pytest_cache/
+
+# Ignore docker related files
+docker-compose.override.yml
+docker-compose.override.yml
+docker-compose.yml
+*.bak
+
+# Ignore compiled translation files
+*.mo
+
+# Ignore backups
+*.bak
+
+# Ignore all log files
+*.log
+
+# Ignore sensitive or system-specific files
+.env
+*.env
+local_settings.py
