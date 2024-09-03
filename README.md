@@ -2,6 +2,18 @@
 
 сам код в README.md, first_task.py/ second_task.py
 
+Как запустить приложение.
+```bash
+python -m venv venv #создайте виртуальное окружение
+cd game #перейдите в директорию с manage.py
+alias pm="python manage.py" #для удобства можно прописать алиас для python manage.py
+pm migrate
+pm createsuperuser #при необходимости можно создать суперпользователя
+pm loaddata db_dump.json
+pm runserver
+```
+для добавления данных используйте [admin panel](http://127.0.0.1:8000/admin/)
+
 # FirstTask
 
 ```python {"id":"01J6VYGB2C7R02YC9VNPNJSJ6P"}
