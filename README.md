@@ -14,6 +14,10 @@ pm loaddata db_dump.json
 pm runserver
 ```
 
+Или ознакомиться с демонстрацией.
+
+[demo](https://disk.yandex.ru/i/yz8yaX__UpZ1LQ)
+
 urls:
 
 http://localhost:8000/player/<int:id>/ #просмотр пользователя по ID
