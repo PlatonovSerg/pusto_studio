@@ -204,3 +204,6 @@ class Player(models.Model):
                 )
 
 ```
+
+### Пример выгруженных данных 
+![alt text](image.png)
