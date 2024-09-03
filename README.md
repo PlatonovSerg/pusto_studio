@@ -1,3 +1,7 @@
+# При желании можно развернуть джанго приложение для ручного тестирования.
+
+сам код в README.md, first_task.py/ second_task.py
+
 # FirstTask
 
 ```python {"id":"01J6VYGB2C7R02YC9VNPNJSJ6P"}
