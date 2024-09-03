@@ -206,4 +206,10 @@ class Player(models.Model):
 ```
 
 ### Пример выгруженных данных 
-![alt text](image.png)
+
+
+```csv
+player_id,level_title,is_completed,prize_title
+strong_143345,MediumLevel,True,Beer
+strong_143345,EasyLevel,True,Pizza
+```
