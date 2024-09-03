@@ -16,7 +16,7 @@ class Player(models.Model):
 
     username = models.CharField(max_length=100, unique=True)
     first_login = models.DateTimeField(default=timezone.now)
-    last_login = models.DateTimeField(default=timezone.now)
+    last_login = models.DateTimeField(default=timezone.now) #необязательное поле.
     points = models.IntegerField(default=0)
 
     def __str__(self):
@@ -45,7 +45,7 @@ class Boost(models.Model):
     )
 
     def __str__(self):
-        return f"{self.type} x{self.amount} for {self.player.username}"
+        return f"{self.type} ,{self.amount} for {self.player.username}"
 
     @classmethod
     def type_of_boost(cls, player):
@@ -103,6 +103,8 @@ class LevelPrize(models.Model):
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
     prize = models.ForeignKey(Prize, on_delete=models.CASCADE)
     received = models.DateField()
+     
+     
 ```
 Написать два метода:
 
@@ -110,54 +112,95 @@ class LevelPrize(models.Model):
 2. Выгрузку в csv следующих данных: id игрока, название уровня, пройден ли уровень, полученный приз за уровень. Учесть, что записей может быть 100 000 и более.
      
 
-### Присвоение приза игроку в зависимости от уровня
+## Task2.1 Присвоение игроку приза за прохождение уровня.
+
 ```python
-from datetime import datetime
-from django.db import transaction
+
+class PlayerPrize(models.Model):
+    """
+    # Добавил модель для связи приза с игроком.
+    """
+
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    prize = models.ForeignKey(Prize, on_delete=models.CASCADE)
+    received = models.DateField(default=timezone.now)
+
+    class Meta:
+        unique_together = ("player", "prize")
+
 
 class PlayerLevel(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
-    completed = models.DateField(null=True, blank=True)
+    completed = models.DateField()
     is_completed = models.BooleanField(default=False)
     score = models.PositiveIntegerField(default=0)
 
     def assign_prize(self):
+        """
+        Создает связь между игроком и призом в случае прохождения уровня.
+        Через таблицу PlayerPrize
+        """
         if self.is_completed:
-            prize = Prize.objects.filter(levelprize__level=self.level).first()
-            if prize:
-                with transaction.atomic():
-                    LevelPrize.objects.create(
-                        level=self.level,
-                        prize=prize,
-                        received=datetime.now()
-                    )
+            level_prize = LevelPrize.objects.filter(level=self.level).first()
+
+            if not level_prize:
+                return False
+
+            if not PlayerPrize.objects.filter(
+                player=self.player, prize=level_prize.prize
+            ).exists():
+                PlayerPrize.objects.create(
+                    player=self.player,
+                    prize=level_prize.prize,
+                    received=timezone.now(),
+                )
                 return True
+
         return False
 ```
-### Выгрузка в csv 
-#### Лучше вынести в utils, но для наглядности присвоил классу.
+
+## Выгрузку в csv следующих данных: id игрока, название уровня, пройден ли уровень, полученный приз за уровень. Учесть, что записей может быть 100 000 и более.
+     
 ```python
-#можно возвращать в httpResponse, но для наглядности выгрузка в файл.
-def save_level_data_to_file(self, file_path):
-    with open(file_path, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['player_id', 'level_title', 'is_completed', 'prize_title'])
+class Player(models.Model):
+    player_id = models.CharField(max_length=100)
 
-        prize_subquery = LevelPrize.objects.filter(
-            level=OuterRef('level'),
-            level__playerlevel__player=OuterRef('player')
-        ).values('prize__title')[:1]
+    def save_level_data_to_file(self, file_path):
+        """
+        Этот метод лучше хранить вне модели в utils,
+        но для наглядности оставил тут.
+        """
+        with open(file_path, "w", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(
+                ["player_id", "level_title", "is_completed", "prize_title"]
+            )
 
-        player_levels = PlayerLevel.objects.filter(player=self).annotate(
-            prize_title=Subquery(prize_subquery)
-        ).select_related('level').iterator()
+            prize_subquery = LevelPrize.objects.filter(
+                level=models.OuterRef("level"),
+                level__playerlevel__player=models.OuterRef("player"),
+            ).values("prize__title")[:1]
 
-        for player_level in player_levels:
-            writer.writerow([
-                self.player_id,
-                player_level.level.title,
-                player_level.is_completed,
-                player_level.prize_title if player_level.prize_title else 'No Prize'
-                  ])
+            player_levels = (
+                PlayerLevel.objects.filter(player=self)
+                .annotate(prize_title=models.Subquery(prize_subquery))
+                .select_related("level")
+                .iterator()
+            )
+
+            for player_level in player_levels:
+                writer.writerow(
+                    [
+                        self.player_id,
+                        player_level.level.title,
+                        player_level.is_completed,
+                        (
+                            player_level.prize_title
+                            if player_level.prize_title
+                            else "No Prize"
+                        ),
+                    ]
+                )
+
 ```
