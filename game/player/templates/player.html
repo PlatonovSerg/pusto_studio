@@ -9,6 +9,7 @@
     <h1 class="player-name">{{player.name}}</h1>
     <p class="player-id">{{player.player_id}}</p>
     <p class="player-points">Points: {{player.total_score}}</p>
+    <a href="{% url 'player:levels' 1 %}">пройденные уровни</a>
     <div class="player-prizes">
       <h2>Prizes</h2>
       <ul>

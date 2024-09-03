@@ -1,7 +1,7 @@
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, get_list_or_404
 
-from .models import LevelPrize, Player, PlayerLevel
+from .models import LevelPrize, Player, PlayerLevel, Level
 
 
 def load_to_csv(request, id):
@@ -40,4 +40,20 @@ def main(request, id):
         "completed_levels_count": completed_levels_count,
     }
 
+    return render(request, template, context=context)
+
+
+def level_page(request, id):
+    player = get_object_or_404(Player, id=id)
+    level_complete_players = PlayerLevel.objects.filter(
+        player=player, is_completed=True
+    )
+    title = "Levels"
+    levels = get_list_or_404(Level)
+    template = "levels.html"
+    context = {
+        "levels": levels,
+        "title": title,
+        "level_complete_players": level_complete_players,
+    }
     return render(request, template, context=context)

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+  <div class="profile-container">
+   <a href="{%url 'player:player' 1%}"> back</a> 
+   {% comment %} /*временная ссылка на пользователя*/ {% endcomment %}
+    <h2>  {{ title }}</h2>
+<ul>
+    {% for level in level_complete_players  %}
+   <li> {{level.level.title}}</li>
+    {% endfor %}
+</ul>
+  
+  {% endblock content %}

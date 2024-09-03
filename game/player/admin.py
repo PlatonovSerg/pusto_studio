@@ -5,7 +5,7 @@ from .models import Level, LevelPrize, Player, PlayerLevel, Prize
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    fields = ("player_id", "score", "prizes", 'name', 'avatar')
+    fields = ("player_id", 'name', 'avatar', "total_score")
 
 
 @admin.register(Level)

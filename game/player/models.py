@@ -1,6 +1,7 @@
+import csv
+
 from django.db import models
 from django.utils import timezone
-import csv
 
 
 class Level(models.Model):
@@ -29,6 +30,10 @@ class PlayerLevel(models.Model):
         super().save(*args, **kwargs)
         if self.is_completed:
             self.player.update_score_and_prizes()
+
+    def __str__(self):
+        return f"{self.player.name} {self.level.title}\
+              пройден {self.is_completed}"
 
 
 class Player(models.Model):

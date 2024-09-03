@@ -17,6 +17,8 @@ body, html {
     width: 90%;
     max-width: 400px;
     text-align: center;
+    min-height: 400px;
+    min-width: 90%;
 }
 
 .avatar img {
@@ -108,7 +110,7 @@ body, html {
 .progress-line-filled {
     height: 100%;
     background-color: #ffa500;
-    width: 40%; /* Заполненность прогресс-бара, можно динамически изменять */
+    width: 40%; 
     position: absolute;
     left: 0;
     top: 0;
